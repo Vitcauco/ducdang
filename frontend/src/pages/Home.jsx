@@ -1,10 +1,13 @@
 import { useState } from "react";
+import QRCode from "react-qr-code";
+import { FaRegCopy } from "react-icons/fa"; // <== import icon Copy
 
 export default function Home() {
   const [originalUrl, setOriginalUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [history, setHistory] = useState([]);
+  const [showQR, setShowQR] = useState(false);
 
   const handleShorten = () => {
     if (originalUrl.trim() === "") return;
@@ -12,11 +15,20 @@ export default function Home() {
     const alias = customAlias.trim() ? customAlias : btoa(originalUrl).slice(0, 6);
     const newShortUrl = baseShortUrl + alias;
     setShortUrl(newShortUrl);
-
     setHistory(prev => [...prev, { original: originalUrl, shortened: newShortUrl }]);
-
     setOriginalUrl("");
     setCustomAlias("");
+    setShowQR(false);
+  };
+
+  const handleCopy = async () => {
+    if (shortUrl) {
+      try {
+        await navigator.clipboard.writeText(shortUrl);
+      } catch (error) {
+        console.error("Copy failed:", error);
+      }
+    }
   };
 
   return (
@@ -30,7 +42,7 @@ export default function Home() {
       }}
     >
       <div className="w-full max-w-7xl grid grid-cols-3 gap-6">
-        
+
         {/* Box 1: Guide */}
         <div className="bg-blue-100 p-6 rounded-lg shadow-lg text-blue-800 text-sm">
           <h2 className="text-xl font-bold mb-4">User Guide</h2>
@@ -78,19 +90,45 @@ export default function Home() {
             </button>
           </form>
 
+          {/* Shortened URL and QR Section */}
           {shortUrl && (
-            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center">
+            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center flex flex-col items-center">
               <p className="text-sm font-medium mb-2">Your shortened URL:</p>
-              <a
-                href={shortUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 font-medium break-words"
+              <div className="flex items-center gap-2 mb-4">
+                <a
+                  href={shortUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 font-medium break-words"
+                >
+                  {shortUrl}
+                </a>
+                <button
+                  onClick={handleCopy}
+                  className="text-gray-600 hover:text-gray-800 p-1 rounded-lg"
+                  title="Copy to clipboard"
+                >
+                  <FaRegCopy size={20} />
+                </button>
+              </div>
+
+              {/* Button to toggle QR code */}
+              <button
+                onClick={() => setShowQR(!showQR)}
+                className="mb-4 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg"
               >
-                {shortUrl}
-              </a>
+                {showQR ? "Hide QR Code" : "Show QR Code"}
+              </button>
+
+              {/* QR Code */}
+              {showQR && (
+                <div className="mt-2 flex justify-center">
+                  <QRCode value={shortUrl} size={128} />
+                </div>
+              )}
             </div>
           )}
+
         </div>
 
         {/* Box 3: History */}
@@ -102,16 +140,37 @@ export default function Home() {
             <ul className="space-y-4">
               {history.map((item, index) => (
                 <li key={index} className="p-3 bg-white border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-700 break-words"><strong>Original:</strong> {item.original}</p>
-                  <p className="text-sm text-blue-600 break-words">
-                    <strong>Shortened:</strong> <a href={item.shortened} target="_blank" rel="noopener noreferrer">{item.shortened}</a>
+                  <p className="text-sm text-gray-700 break-words mb-1">
+                    <strong>Original:</strong> {item.original}
                   </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-blue-600 break-words">
+                      <strong>Shortened:</strong>{" "}
+                      <a
+                        href={item.shortened}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {item.shortened}
+                      </a>
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(item.shortened);
+                        alert("Copied to clipboard!");
+                      }}
+                      className="text-gray-600 hover:text-gray-800 p-1 rounded-lg"
+                      title="Copy to clipboard"
+                    >
+                      <FaRegCopy size={18} />
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </div>
-
       </div>
     </div>
   );
