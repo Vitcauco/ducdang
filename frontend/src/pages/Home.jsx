@@ -1,0 +1,118 @@
+import { useState } from "react";
+
+export default function Home() {
+  const [originalUrl, setOriginalUrl] = useState("");
+  const [customAlias, setCustomAlias] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+  const [history, setHistory] = useState([]);
+
+  const handleShorten = () => {
+    if (originalUrl.trim() === "") return;
+    const baseShortUrl = "https://sho.rt/";
+    const alias = customAlias.trim() ? customAlias : btoa(originalUrl).slice(0, 6);
+    const newShortUrl = baseShortUrl + alias;
+    setShortUrl(newShortUrl);
+
+    setHistory(prev => [...prev, { original: originalUrl, shortened: newShortUrl }]);
+
+    setOriginalUrl("");
+    setCustomAlias("");
+  };
+
+  return (
+    <div
+      className="min-h-screen flex justify-center items-center p-6"
+      style={{
+        backgroundImage: "url('https://i.pinimg.com/236x/31/8a/82/318a820a19ea2fa8eb9b5a780dce3800.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="w-full max-w-7xl grid grid-cols-3 gap-6">
+        
+        {/* Box 1: Guide */}
+        <div className="bg-blue-100 p-6 rounded-lg shadow-lg text-blue-800 text-sm">
+          <h2 className="text-xl font-bold mb-4">User Guide</h2>
+          <p>- Enter your long URL in the middle box.</p>
+          <p>- You can customize the alias as you like.</p>
+          <p>- If you leave it empty, the system will auto-generate one.</p>
+          <p>- After shortening, the link will appear on the right.</p>
+        </div>
+
+        {/* Box 2: Form */}
+        <div className="bg-white p-6 rounded-lg shadow-lg text-gray-800">
+          <h1 className="text-2xl font-bold mb-4">Shorten a Long URL</h1>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleShorten();
+            }}
+          >
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Enter your original URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com"
+                value={originalUrl}
+                onChange={(e) => setOriginalUrl(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Customize your alias (optional)</label>
+              <input
+                type="text"
+                placeholder="Enter alias"
+                value={customAlias}
+                onChange={(e) => setCustomAlias(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+            >
+              Shorten URL
+            </button>
+          </form>
+
+          {shortUrl && (
+            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center">
+              <p className="text-sm font-medium mb-2">Your shortened URL:</p>
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 font-medium break-words"
+              >
+                {shortUrl}
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Box 3: History */}
+        <div className="bg-gray-50 p-6 rounded-lg shadow-lg text-gray-800 overflow-y-auto">
+          <h2 className="text-xl font-bold mb-4">Shortened URL History</h2>
+          {history.length === 0 ? (
+            <p className="text-gray-500">No URLs have been shortened yet.</p>
+          ) : (
+            <ul className="space-y-4">
+              {history.map((item, index) => (
+                <li key={index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                  <p className="text-sm text-gray-700 break-words"><strong>Original:</strong> {item.original}</p>
+                  <p className="text-sm text-blue-600 break-words">
+                    <strong>Shortened:</strong> <a href={item.shortened} target="_blank" rel="noopener noreferrer">{item.shortened}</a>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
