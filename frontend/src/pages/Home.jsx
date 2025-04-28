@@ -1,6 +1,6 @@
 import { useState } from "react";
 import QRCode from "react-qr-code";
-import { FaRegCopy } from "react-icons/fa"; // <== import icon Copy
+import { FaRegCopy } from "react-icons/fa";
 
 export default function Home() {
   const [originalUrl, setOriginalUrl] = useState("");
